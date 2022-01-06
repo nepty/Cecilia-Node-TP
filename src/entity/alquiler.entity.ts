@@ -29,7 +29,7 @@ export class Alquiler {
     @CreateDateColumn({type : "date"})
     fechaInicial! : string
 
-    // la fecha de devolución queda nula hasta el momento de la devolucion
+    // la fecha de devolución, queda nula hasta el momento de la devolución
     @Field(()=> String, {nullable: true})
     @Column({type : "date" , nullable: true})
     fechaDevolucion! : string | null

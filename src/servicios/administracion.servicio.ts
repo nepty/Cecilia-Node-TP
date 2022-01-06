@@ -1,9 +1,9 @@
-import { enviarEmail, EnviarEmailRespuesta } from "./email.servicio";
+import { enviarEmail, EnviarEmailOutput } from "./email.servicio";
 import { getRepository, Repository } from "typeorm";
 import { Book } from "../entity/book.entity"
 
 // enviar el reporte administrativo
-export async function enviarReporteAdministrativo () : Promise<EnviarEmailRespuesta>{
+export async function enviarReporteAdministrativo () : Promise<EnviarEmailOutput>{
     console.log("!---- Enviar reporte administrativo");
     const bookRepository = getRepository(Book);
     const fechaActual = new Date();
@@ -14,7 +14,7 @@ export async function enviarReporteAdministrativo () : Promise<EnviarEmailRespue
     // para cada libro imprimir su informacion 
     librosAlquilados.forEach( (book : Book) => {
         let cantidadDias = Math.floor((fechaActual.getTime() - new Date(book.alquiler!.fechaInicial).getTime()) /  86400000);
-        // Muestro Titulo del libro, fecha de alquiler, cantidad de dias transcurridos desde el inicio del alquiler ...
+        // Muestra Titulo del libro, fecha de alquiler, cantidad de dias transcurridos desde el inicio del alquiler ...
         mensaje += "<span style='color:" + (cantidadDias > 7 ? "red" : "black") + "'>" 
         mensaje += " <b>Titulo:</b> " + book.title + " <b>Usuario:</b> " + book.alquiler!.user.fullName + " <b>Email:</b> " + book.alquiler!.user.email;
         mensaje += " <b>Fecha de alquiler:</b> " + book.alquiler!.fechaInicial + " <b>Cantidad de dias:</b> " + cantidadDias 
@@ -50,7 +50,7 @@ export async function enviarAlertasDeAlquiler () : Promise<Object>{
             let mensaje = "<b>REPORTE DE ALQUILER VENCIDO</b><br/><br/>";
             mensaje += "<b>Titulo:</b> " + book.title + "<br/>";
             mensaje += "<b>Fecha de alquiler:</b> " + book.alquiler!.fechaInicial + "<br/>";
-            mensaje += "<span style='color:red'><b>Cantidad de dias:</b> " + cantidadDias + "</span><br/>";
+            mensaje += "<span style='color:red'><b>Cantidad de días:</b> " + cantidadDias + "</span><br/>";
             mensaje += "<span style='color:red'><b>Multa:</b> " + ((cantidadDias - 7 ) * 100) + " pesos (100 pesos por día extra)</span><br/>";
             console.log("Alerta Libro: " , book.title, " cantidad de días ? " , cantidadDias , " fecha de alquiler : " , book.alquiler!.fechaInicial);
             // enviar la alerta por email al usuario

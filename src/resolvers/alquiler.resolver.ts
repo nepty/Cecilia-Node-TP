@@ -1,5 +1,6 @@
-import { Resolver, Query, Mutation, Arg, InputType, Field, Args, ObjectType} from 'type-graphql';
+import { Resolver, Query, Mutation, Arg, InputType, Field, Args, UseMiddleware, ObjectType} from 'type-graphql';
 import { getRepository, IsNull, Repository } from 'typeorm';
+import { IContext, isAuth } from '../middlewares/auth.middleware';
 import { Alquiler } from "../entity/alquiler.entity";
 import {Book} from "../entity/book.entity";
 import {User} from "../entity/user.entity";
@@ -52,6 +53,7 @@ export class AlquilerResolver{
 
     /* Crea un nuevo alquiler */
     @Mutation( () => Alquiler)
+    @UseMiddleware(isAuth)
     async crearAlquiler( @Arg("input", () => NuevoAlquierInput) input: NuevoAlquierInput ) : Promise<Alquiler | undefined> { // Promise<Alquiler | undefined>
         try {
             console.log("! -- Crear alquiler para el Libro (ID) : ", input.book, " Usuario ID: ", input.user);
@@ -147,6 +149,7 @@ export class AlquilerResolver{
 
     /*  Devolver un libro , se pasa como parametro el ID del libro */
     @Mutation(()=>DevolverLibroOutput)
+    @UseMiddleware(isAuth)
     async devolverLibro(@Arg("input", () => DevolverLibroInput) input : DevolverLibroInput) {
         try {
             console.log("!--- Devolver libro" , input.libroID);

@@ -1,7 +1,8 @@
-import { Mutation, Resolver, Arg, InputType, Field, Query } from 'type-graphql';
+import { Mutation, Resolver, Arg, InputType, Field, Query, UseMiddleware } from 'type-graphql';
 import { Author } from '../entity/author.entity';
 import { getRepository, Repository } from "typeorm";
 import { Length, IsString } from 'class-validator';
+import { IContext, isAuth } from '../middlewares/auth.middleware';
 
 @InputType()
 class AuthorInput {
@@ -29,12 +30,11 @@ class AuthorIdInput {
 export class AuthorResolver {
 
     authorRepository: Repository<Author>
-
     constructor() {
         this.authorRepository = getRepository(Author)
     }
 
-    // Crea un autor
+    // Crear un autor
     @Mutation(() => Author)
     async createAuthor(
         @Arg("input", () => AuthorInput) input: AuthorInput
@@ -42,32 +42,35 @@ export class AuthorResolver {
         console.log("!----- Crear nuevo usuario !");
         console.log("Parametros: ", input);
         try {
-            // ... el autor ya se encuentr registrado ? (no valida minusculas o mayusculas , debería !)
+            // el autor ya se encuentra registrado ? (no valida minusculas o mayusculas , debería !) ...
             const autorBuscado = await this.authorRepository.findOne({where:{fullName : input.fullName}});
-            // ... si ya esta registrado muestro un error
+            // si ya esta registrado muestro un error
             if (autorBuscado){
                 const error = new Error("ERROR: El autor = " + input.fullName + " ya se encuentra registrado!");
                 console.log(error.message);
                 throw error;
             }
-            // Agrego el nuevo autor
+            // Agregar el nuevo autor
             const createdAuthor = await this.authorRepository.insert({ fullName: input.fullName });
+            // Retorno el autor creado y fin
             const result = await this.authorRepository.findOne(createdAuthor.identifiers[0].id);
             console.log("Nuevo autor creado : ", result)
             return result;
         } catch (error){
-            throw error; // Acá capturo los errores de más arriba
+            throw error; 
         }
     }
 
     // Recupera todos los autores con sus libros y cada libro con su estado de alquiler
     @Query(() => [Author])
+    @UseMiddleware(isAuth)
     async getAllAuthors(): Promise<Author[]> {
         return await this.authorRepository.find({ relations: ['books','books.alquiler'] });
     }
 
     // Recupera todos los libro para un autor, cada libro lleva su estado de alquiler
     @Query(() => Author)
+    @UseMiddleware(isAuth)
     async getOneAuthor(
         @Arg("input", () => AuthorIdInput) input: AuthorIdInput
     ): Promise<Author | undefined> {
@@ -84,7 +87,7 @@ export class AuthorResolver {
         }
     }
 
-    // Modica un autor
+    // Modifica un autor
     @Mutation(() => Author)
     async updateOneAuthor(
         @Arg("input", () => AuthorUpdateInput) input: AuthorUpdateInput

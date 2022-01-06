@@ -117,7 +117,6 @@ class GenerarTokenValidacionCorreoOutput{
 export class AuthResolver {
 
     userRepository: Repository<User>;
-
     constructor() {
         this.userRepository = getRepository(User);
     }
@@ -174,18 +173,18 @@ export class AuthResolver {
     }
 
     /* Validar una cuenta de correo pasando como parametro un token*/
-    @Mutation(() => ValidarCorreoOutput) 
-        async validarCorreo( @Arg("input",()=> ValidarCorreoInput) input : ValidarCorreoInput 
+    @Mutation( () => ValidarCorreoOutput ) 
+        async validarCorreo( @Arg("input", () => ValidarCorreoInput ) input : ValidarCorreoInput 
     ){
         console.log("!----- VALIDAR CORREO ");
         console.log("Parametros: ", input)
         try {
             // los datos que vienen dentro del token (user.id)
-            const payload = verify(input.token, environment.JWT_SECRET) as any;
+            const payload = verify( input.token, environment.JWT_SECRET ) as any;
             console.log("USER ID ? ", payload.id );
             // buscar el usuario que tiene ese id
             const userFound = await this.userRepository.findOne(payload.id);
-            // ... si no lo encuentro entonces ERROR
+            // existe el usuario ? ...
             if (!userFound){
                 const error = new Error("El usuario con el ID : " + payload.id + " no existe !");
                 console.log(error.message);
@@ -199,7 +198,7 @@ export class AuthResolver {
                 console.log(respuesta.mensaje);
                 return respuesta;
             }
-            // actualizar el estado de validacion del usuario 
+            // actualizar el estado de validación del usuario 
             const resultadoUpdate = await this.userRepository.update({ id : userFound.id }, { valido : true});
             if (!resultadoUpdate){
                 const error = new Error("Error al intentar actualizar el usuario");

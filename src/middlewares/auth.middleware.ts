@@ -16,11 +16,9 @@ export const isAuth: MiddlewareFn<IContext> = ({ context }, next) => {
             console.log("USUARIO NO AUTORIZADO!")
             throw new Error('Usuario sin login, no puede entrar!');
         };
-
         const jwt = bearerToken.split(" ")[1];
         const payload = verify(jwt, environment.JWT_SECRET);
         context.payload = payload as any;
-
     } catch (error) {
         throw error;
     }
